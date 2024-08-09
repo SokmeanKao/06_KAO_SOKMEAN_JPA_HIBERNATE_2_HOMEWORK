@@ -13,18 +13,12 @@ import java.util.UUID;
 
 @Repository
 @AllArgsConstructor
+@Transactional
 public class BookRepository {
 
     @PersistenceContext
     private final EntityManager entityManager;
 
-    @Transactional
-    public void deleteBook(UUID id) {
-        Book b = entityManager.find(Book.class, id);
-        entityManager.remove(b);
-    }
-
-    @Transactional
     public Book insertBook(BookRequest bookRequest) {
         Book b = new Book();
         b.setTitle(bookRequest.getTitle());
@@ -35,7 +29,21 @@ public class BookRepository {
         return b;
     }
 
-    @Transactional
+    public List<Book> getAllBooks() {
+        return entityManager.createQuery("SELECT b FROM Books b", Book.class).getResultList();
+    }
+
+    public Book getBookById(UUID id) {
+        return entityManager.find(Book.class, id);
+    }
+
+    public List<Book> getBookByTitle(String title) {
+        return entityManager.createQuery("SELECT b FROM Books b WHERE b.title LIKE :title", Book.class)
+                .setParameter("title", "%" + title + "%")
+                .getResultList();
+
+    }
+
     public Book updateBook(UUID id, BookRequest bookRequest) {
         Book b = entityManager.find(Book.class, id);
         entityManager.detach(b);
@@ -47,21 +55,8 @@ public class BookRepository {
         return b;
     }
 
-    @Transactional
-    public List<Book> getAllBooks() {
-        return entityManager.createQuery("SELECT b FROM Books b", Book.class).getResultList();
-    }
-
-    @Transactional
-    public Book getBookById(UUID id) {
-        return entityManager.find(Book.class, id);
-    }
-
-    @Transactional
-    public List<Book> getBookByTitle(String title) {
-        return entityManager.createQuery("SELECT b FROM Books b WHERE b.title LIKE :title", Book.class)
-                .setParameter("title", "%" + title + "%")
-                .getResultList();
-
+    public void deleteBook(UUID id) {
+        Book b = entityManager.find(Book.class, id);
+        entityManager.remove(b);
     }
 }
